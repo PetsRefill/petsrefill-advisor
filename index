@@ -1,13 +1,353 @@
 <!DOCTYPE html>
 <html lang="nl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PetsRefill Westland — Voedingsadviseur</title>
-    <style>* { margin: 0; padding: 0; box-sizing: border-box; } body { background: #F5F0E8; }</style>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PetsRefill Westland — Voedingsadviseur</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #F5F0E8; font-family: 'DM Sans', sans-serif; color: #2C3E35; min-height: 100vh; }
+    .app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+    .header { background: #2C4A3E; padding: 16px 22px; display: flex; align-items: center; justify-content: space-between; }
+    .header-logo { display: flex; align-items: center; gap: 10px; }
+    .header-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .header-title { font-family: 'Fraunces', serif; color: #fff; font-weight: 700; font-size: 17px; }
+    .header-sub { color: rgba(255,255,255,0.6); font-size: 11px; }
+    .progress { display: flex; gap: 5px; margin-bottom: 28px; }
+    .progress-bar { flex: 1; height: 4px; border-radius: 4px; background: #D4C9B0; transition: background .3s; }
+    .progress-bar.done { background: #2C4A3E; }
+    .content { padding: 26px 22px; flex: 1; }
+    .step { animation: fadeUp .3s ease; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    h2 { font-family: 'Fraunces', serif; font-size: clamp(24px,5vw,32px); font-weight: 700; color: #1A2E27; letter-spacing: -.02em; line-height: 1.15; margin-bottom: 8px; }
+    .subtitle { font-size: 14px; color: #6B7B6F; margin-bottom: 24px; line-height: 1.55; }
+    .btn-primary { background: #2C4A3E; color: #fff; border: none; padding: 14px 24px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; width: 100%; transition: opacity .2s; margin-top: 20px; display: block; text-align: center; }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-primary:not(:disabled):hover { opacity: .88; }
+    .btn-back { background: none; border: none; color: #6B7B6F; font-size: 14px; cursor: pointer; font-family: inherit; margin-top: 14px; padding: 0; display: block; }
+    .species-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .species-card { padding: 30px 16px; background: #fff; border: 2px solid #D4C9B0; border-radius: 18px; cursor: pointer; font-family: inherit; transition: all .2s; text-align: center; }
+    .species-card:hover { border-color: #2C4A3E; background: #EDE6D6; }
+    .species-emoji { font-size: 48px; margin-bottom: 8px; display: block; }
+    .species-label { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: #1A2E27; }
+    .field-label { display: block; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #2C3E35; margin-bottom: 8px; margin-top: 18px; }
+    input[type=text], input[type=number], input[type=tel], input[type=email] { width: 100%; padding: 12px 15px; border: 2px solid #D4C9B0; border-radius: 11px; font-size: 15px; font-family: inherit; background: #fff; color: #1A2E27; outline: none; transition: border-color .15s; }
+    input:focus { border-color: #2C4A3E; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { padding: 9px 16px; border-radius: 999px; border: 2px solid #D4C9B0; background: #fff; color: #2C3E35; font-size: 13px; cursor: pointer; font-family: inherit; transition: all .15s; }
+    .chip.active { background: #2C4A3E; color: #fff; border-color: #2C4A3E; font-weight: 600; }
+    .activity-btn { width: 100%; padding: 14px 18px; text-align: left; border: 2px solid #D4C9B0; background: #fff; border-radius: 13px; cursor: pointer; font-family: inherit; margin-bottom: 10px; transition: all .15s; }
+    .activity-btn.active { background: #2C4A3E; color: #fff; border-color: #2C4A3E; }
+    .activity-title { font-weight: 600; font-size: 15px; margin-bottom: 3px; }
+    .activity-desc { font-size: 12px; opacity: .7; }
+    .check-row { display: flex; align-items: center; gap: 10px; margin-top: 16px; cursor: pointer; }
+    .check-row input { width: 18px; height: 18px; accent-color: #2C4A3E; cursor: pointer; }
+    .product-card { border: 2px solid #D4C9B0; border-radius: 16px; padding: 18px; background: #fff; cursor: pointer; margin-bottom: 12px; transition: all .2s; text-align: left; width: 100%; font-family: inherit; position: relative; }
+    .product-card.selected { background: #2C4A3E; color: #fff; border-color: #2C4A3E; }
+    .product-badge { position: absolute; top: -1px; right: 14px; background: #C8873A; color: #fff; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 0 0 7px 7px; letter-spacing: .05em; text-transform: uppercase; }
+    .product-brand { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; opacity: .6; margin-bottom: 3px; }
+    .product-name { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 700; line-height: 1.2; margin-bottom: 14px; }
+    .product-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 12px 0; border-top: 1px solid rgba(0,0,0,.08); border-bottom: 1px solid rgba(0,0,0,.08); margin-bottom: 12px; }
+    .product-card.selected .product-stats { border-color: rgba(255,255,255,.2); }
+    .stat-label { font-size: 10px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; opacity: .55; margin-bottom: 3px; }
+    .stat-val { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; }
+    .product-footer { display: flex; justify-content: space-between; font-size: 13px; opacity: .7; }
+    .snack-btn { width: 100%; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; border: 2px solid #D4C9B0; border-radius: 12px; background: #fff; cursor: pointer; font-family: inherit; margin-bottom: 22px; transition: all .2s; }
+    .snack-btn.active { border-color: #C8873A; background: #FDF3E3; }
+    .summary { background: #2C4A3E; color: #fff; border-radius: 16px; padding: 20px; margin-bottom: 14px; }
+    .summary-hdr { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; opacity: .55; margin-bottom: 14px; }
+    .srow { display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,.1); }
+    .srow:last-child { border-bottom: none; }
+    .srow.bold { font-weight: 600; }
+    .sdiv { border-top: 1px solid rgba(255,255,255,.2); margin: 12px 0; }
+    .notice { background: #EDE6D6; border-radius: 11px; padding: 14px 16px; margin-bottom: 20px; font-size: 14px; line-height: 1.55; }
+    .success { text-align: center; padding-top: 20px; }
+    .success-icon { font-size: 64px; margin-bottom: 20px; display: block; }
+    .success-list { background: #fff; border-radius: 13px; border: 1px solid #D4C9B0; margin: 20px 0; text-align: left; }
+    .sli { padding: 12px 18px; font-size: 14px; border-bottom: 1px solid #EDE6D6; }
+    .sli:last-child { border-bottom: none; }
+    .btn-outline { background: transparent; color: #2C4A3E; border: 2px solid #2C4A3E; padding: 13px 24px; border-radius: 12px; font-size: 15px; font-weight: 500; cursor: pointer; font-family: inherit; width: 100%; text-decoration: none; display: block; text-align: center; }
+    .footer { padding: 0 22px 24px; }
+    .footer-inner { background: #2C4A3E; border-radius: 13px; padding: 13px 16px; }
+    .fitem { font-size: 12px; color: rgba(255,255,255,.7); padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.1); }
+    .fitem:last-child { border-bottom: none; }
+    .err { background: #fde8e8; border-radius: 10px; padding: 13px 16px; margin-bottom: 16px; font-size: 14px; color: #c0392b; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-logo">
+      <div class="header-icon">🐾</div>
+      <div>
+        <div class="header-title">PetsRefill</div>
+        <div class="header-sub">Westland · Gratis bezorgd</div>
+      </div>
+    </div>
+    <span id="pcount" style="font-size:11px;color:rgba(255,255,255,.45)"></span>
+  </div>
+  <div class="content" id="content"><div style="text-align:center;padding:40px;color:#6B7B6F">Laden…</div></div>
+  <div class="footer">
+    <div class="footer-inner">
+      <div class="fitem">📦 Bestel vóór donderdag 12:00 → bezorging zaterdag</div>
+      <div class="fitem">🚗 Eerste levering gratis met code REFILL</div>
+      <div class="fitem">💬 Vragen? App Marc direct — geen callcenter</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB  = "https://ftmyxsnrzudigtlrgntc.supabase.co";
+const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0bXl4c25yenVkaWd0bHJnbnRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxNzM3MzYsImV4cCI6MjA1ODc0OTczNn0.VmC-2BnBwbUF3VHwZXfiqY4QpumUOEnuEnCUEm5YXBU";
+const FN  = "https://ftmyxsnrzudigtlrgntc.supabase.co/functions/v1/create-delivery";
+const SHP = "https://petsrefillwestland.nl/products";
+const HDR = { apikey: KEY, Authorization: `Bearer ${KEY}` };
+
+let s = {
+  step:0, products:[],
+  species:"", name:"", weightKg:0, lifeStage:"", dogSize:"", neutered:false,
+  activity:"", brand:"", allergyNote:"",
+  rec:null, chosen:null, snackOn:false,
+  custName:"", phone:"", email:"",
+  delivDate:"", error:""
+};
+
+const fmtG = g => g>=1000 ? (g/1000).toFixed(g%1000===0?0:1)+" kg" : g+"g";
+
+function nextSat() {
+  const d=new Date(), day=d.getDay();
+  d.setDate(d.getDate()+(day===6?7:(6-day+7)%7||7));
+  return d.toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"});
+}
+
+function calcG(w,ppkg,neut,ls,act) {
+  let g=w*parseFloat(ppkg||10);
+  if(neut) g*=.85; if(ls==="senior") g*=.9;
+  if(ls==="puppy"||ls==="kitten") g*=1.3;
+  if(act==="hoog") g*=1.15; if(act==="laag") g*=.9;
+  return Math.round(g);
+}
+
+function bestBag(sizes,dg) {
+  if(!sizes?.length) return 0;
+  return sizes.map(g=>({g,d:Math.abs(g-dg*30)})).sort((a,b)=>a.d-b.d)[0].g;
+}
+
+function enrich(p) {
+  const dg=calcG(s.weightKg,p.portion_per_kg,s.neutered,s.lifeStage,s.activity);
+  const bg=bestBag(p.bag_sizes_g,dg);
+  return {...p,dg,bg,days:bg&&dg?Math.round(bg/dg):30};
+}
+
+function doRec() {
+  const cat=s.species==="hond"?"droogvoer_hond":"droogvoer_kat";
+  let pool=s.products.filter(p=>p.category===cat);
+  pool=pool.filter(p=>{
+    const n=p.name.toLowerCase();
+    if(s.lifeStage==="puppy"||s.lifeStage==="kitten") return n.includes("puppy")||n.includes("kitten");
+    if(s.lifeStage==="senior") return n.includes("senior");
+    return !n.includes("puppy")&&!n.includes("kitten");
+  });
+  if(s.species==="hond"&&s.dogSize){
+    const f=pool.filter(p=>{
+      const n=p.name.toLowerCase();
+      if(s.dogSize==="mini") return n.includes("mini")||n.includes("small");
+      if(s.dogSize==="maxi") return n.includes("maxi")||n.includes("large");
+      return n.includes("medium")&&!n.includes("mini")&&!n.includes("maxi");
+    });
+    if(f.length) pool=f;
+  }
+  const wb=s.brand||"Advance";
+  const main=pool.find(p=>p.brand===wb)||pool[0];
+  const alt=pool.find(p=>p!==main&&(p.brand==="Royal Canin"||p.brand==="Acana"))||pool.find(p=>p!==main);
+  const snacks=s.products.filter(p=>p.category==="snack");
+  const sz=s.dogSize==="mini"?"mini":"medium";
+  const snack=s.species==="hond"
+    ?(snacks.find(p=>p.name.toLowerCase().includes("dental")&&p.name.toLowerCase().includes(sz))||snacks.find(p=>p.name.toLowerCase().includes("dental")))
+    :null;
+  s.rec={main:main?enrich(main):null, alt:alt?enrich(alt):null, snack:snack?enrich(snack):null};
+  s.chosen=s.rec.main; s.snackOn=false; s.step=4; render();
+}
+
+function prog(cur,tot) {
+  return `<div class="progress">${Array.from({length:tot}).map((_,i)=>`<div class="progress-bar${i<cur?" done":""}"></div>`).join("")}</div>`;
+}
+
+function chips(opts,cur,key) {
+  return `<div class="chips">${opts.map(([v,l])=>`<button class="chip${cur===v?" active":""}" onclick="ss('${key}','${v}')">${l}</button>`).join("")}</div>`;
+}
+
+function pcard(p,sel,main) {
+  if(!p) return "";
+  return `<button class="product-card${sel?" selected":""}" onclick="choose('${p.shopify_handle}')">
+    ${main?'<div class="product-badge">Aanbevolen</div>':""}
+    <div class="product-brand">${p.brand}</div>
+    <div class="product-name">${p.name}</div>
+    <div class="product-stats">
+      <div><div class="stat-label">Per dag</div><div class="stat-val">${p.dg}g</div></div>
+      <div><div class="stat-label">Zak</div><div class="stat-val">${fmtG(p.bg)}</div></div>
+      <div><div class="stat-label">Mee voor</div><div class="stat-val">~${p.days}d</div></div>
+    </div>
+    <div class="product-footer"><span>${Math.ceil(30/p.days)}× per maand</span><span>${sel?"✓":"○"}</span></div>
+  </button>`;
+}
+
+function render() {
+  document.getElementById("pcount").textContent=s.products.length?s.products.length+" producten":"";
+  const el=document.getElementById("content");
+  const isDog=s.species==="hond";
+  const views={
+    0:`<div class="step">${prog(1,5)}<h2>Welk dier mag ik helpen?</h2><p class="subtitle">Ik stel een persoonlijk voedingsadvies op voor jouw dier.</p>
+      <div class="species-grid">
+        <button class="species-card" onclick="ss2({species:'hond',step:1})"><span class="species-emoji">🐕</span><div class="species-label">Hond</div></button>
+        <button class="species-card" onclick="ss2({species:'kat',step:1})"><span class="species-emoji">🐈</span><div class="species-label">Kat</div></button>
+      </div></div>`,
+
+    1:`<div class="step">${prog(2,5)}<h2>Over ${s.name||(isDog?"je hond":"je kat")}</h2>
+      <label class="field-label">Naam</label><input type="text" value="${s.name}" placeholder="${isDog?"Bijv. Max":"Bijv. Luna"}" oninput="s.name=this.value;rerenderName()"/>
+      <label class="field-label">Gewicht (kg)</label><input type="number" step="0.5" min="0.5" value="${s.weightKg||""}" placeholder="${isDog?"20":"4.5"}" oninput="s.weightKg=parseFloat(this.value)||0"/>
+      <label class="field-label">Levensfase</label>${chips(isDog?[["puppy","Pup"],["adult","Volwassen"],["senior","Senior 6+"]]: [["kitten","Kitten"],["adult","Volwassen"],["senior","Senior 8+"]],s.lifeStage,"lifeStage")}
+      ${isDog?`<label class="field-label">Rasgrootte</label>${chips([["mini","Klein  < 10kg"],["medium","Middel  10-25kg"],["maxi","Groot  25kg+"]],s.dogSize,"dogSize")}`:""}
+      <label class="check-row"><input type="checkbox" ${s.neutered?"checked":""} onchange="s.neutered=this.checked"/><span>${isDog?"Gecastreerd":"Gesteriliseerd"}</span></label>
+      <button class="btn-primary" id="btn1" onclick="goStep2()">Volgende →</button>
+      <button class="btn-back" onclick="ss('step',0)">← Terug</button></div>`,
+
+    2:`<div class="step">${prog(3,5)}<h2>Hoe actief is ${s.name}?</h2><p class="subtitle">Dit bepaalt de dagelijkse portie.</p>
+      ${[["laag","Rustig",isDog?"Korte ommetjes, veel slapen":"Voornamelijk binnen"],["normaal","Normaal",isDog?"2-3 wandelingen per dag":"Actief maar overwegend binnen"],["hoog","Heel actief",isDog?"Lange wandelingen of sport":"Veel buiten, jaagt regelmatig"]].map(([v,t,d])=>`
+      <button class="activity-btn${s.activity===v?" active":""}" onclick="ss('activity','${v}')"><div class="activity-title">${t}</div><div class="activity-desc">${d}</div></button>`).join("")}
+      <button class="btn-primary" id="btn2" onclick="goStep3()">Volgende →</button>
+      <button class="btn-back" onclick="ss('step',1)">← Terug</button></div>`,
+
+    3:`<div class="step">${prog(4,5)}<h2>Jouw voorkeuren</h2>
+      <label class="field-label">Merkvoorkeur?</label>${chips([["","Geen voorkeur"],["Advance","Advance"],["Royal Canin","Royal Canin"],["Acana","Acana"]],s.brand,"brand")}
+      <p style="font-size:12px;color:#6B7B6F;margin-top:8px">Geen voorkeur = advies op kwaliteit.</p>
+      <label class="field-label">Bijzonderheden (optioneel)</label><input type="text" value="${s.allergyNote}" placeholder="Bijv. allergisch voor kip…" oninput="s.allergyNote=this.value"/>
+      <button class="btn-primary" onclick="doRec()">Bekijk mijn advies →</button>
+      <button class="btn-back" onclick="ss('step',2)">← Terug</button></div>`,
+
+    4:()=>{
+      if(!s.rec) return "";
+      const {main,alt,snack}=s.rec;
+      const ch=s.chosen?.shopify_handle;
+      return `<div class="step">${prog(5,5)}<h2>Advies voor ${s.name}</h2><p class="subtitle">Klik op het voer dat je wilt ontvangen.</p>
+        ${pcard(main,ch===main?.shopify_handle,true)}
+        ${pcard(alt,ch===alt?.shopify_handle,false)}
+        ${snack?`<button class="snack-btn${s.snackOn?" active":""}" onclick="toggleSnack()">
+          <div style="text-align:left"><div style="font-size:12px;font-weight:600;color:#C8873A;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Aanvulling</div>
+          <div style="font-size:14px;font-weight:500;color:#1A2E27">${snack.name}</div><div style="font-size:12px;color:#6B7B6F">Maandelijks meebezorgd</div></div>
+          <span style="font-size:20px;color:#C8873A">${s.snackOn?"✓":"+"}</span></button>`:""}
+        <button class="btn-primary" ${s.chosen?"":"disabled"} onclick="${s.chosen?"ss('step',5)":"void(0)"}">Naar bevestiging →</button>
+        <button class="btn-back" onclick="ss('step',3)">← Terug</button></div>`;
+    },
+
+    5:()=>{
+      if(!s.chosen) return "";
+      const snk=s.snackOn&&s.rec?.snack?s.rec.snack:null;
+      const sat=nextSat();
+      const v=s.custName&&s.phone;
+      return `<div class="step"><h2>Jouw abonnement</h2><p class="subtitle">Controleer en vul je gegevens in.</p>
+        <div class="summary">
+          <div class="summary-hdr">Wat je ontvangt · elke ~${s.chosen.days} dagen</div>
+          <div class="srow"><span>${s.chosen.brand} ${s.chosen.name}</span><span>${fmtG(s.chosen.bg)}</span></div>
+          <div class="srow"><span>Portie per dag voor ${s.name}</span><span>${s.chosen.dg}g</span></div>
+          ${snk?`<div class="srow"><span>${snk.name}</span><span>${fmtG(snk.bg)}</span></div>`:""}
+          <div class="sdiv"></div>
+          <div class="srow bold"><span>Eerste levering</span><span>${sat}</span></div>
+          <div class="srow"><span>Bezorging</span><span>Gratis · Westland</span></div>
+        </div>
+        <div class="notice">🔔 Je ontvangt een email ~3 dagen voordat het voer op is om de volgende levering te bevestigen. Één klik. Geen contract.</div>
+        ${s.error?`<div class="err">❌ ${s.error}</div>`:""}
+        <label class="field-label">Naam</label><input type="text" value="${s.custName}" placeholder="Jouw naam" oninput="s.custName=this.value"/>
+        <label class="field-label">Telefoonnummer</label><input type="tel" value="${s.phone}" placeholder="0612345678" oninput="s.phone=this.value"/>
+        <label class="field-label">E-mailadres (voor herinneringsmail)</label><input type="email" value="${s.email}" placeholder="jouw@email.nl" oninput="s.email=this.value"/>
+        <button class="btn-primary" id="submitBtn" ${v?"":"disabled"} onclick="${v?"doSubmit()":"void(0)"}">✓ Bevestig en start abonnement</button>
+        <button class="btn-back" onclick="ss('step',4)">← Terug naar productkeuze</button></div>`;
+    },
+
+    6:`<div class="step success"><span class="success-icon">🐾</span>
+      <h2>Geregeld, welkom!</h2>
+      <p class="subtitle">De eerste levering van <strong>${s.chosen?.name}</strong> voor ${s.name} staat gepland voor <strong>${s.delivDate}</strong>. Marc neemt contact op voor het bezorgadres.</p>
+      <div class="success-list">
+        <div class="sli">📦 Persoonlijke bezorging aan huis in Westland</div>
+        <div class="sli">🔔 Email-herinnering 3 dagen voor het op is</div>
+        <div class="sli">✏️ Portie of product aanpassen? Altijd mogelijk</div>
+        <div class="sli">🛑 Stoppen? Geen contract, gewoon zeggen</div>
+      </div>
+      <a class="btn-outline" href="${SHP}/${s.chosen?.shopify_handle}" target="_blank">Bekijk product in de webshop</a></div>`,
+  };
+
+  const v=views[s.step];
+  el.innerHTML=typeof v==="function"?v():v;
+  // Disable-check na render voor stap 1 en 2
+  updateBtns();
+}
+
+function updateBtns() {
+  const b1=document.getElementById("btn1");
+  const b2=document.getElementById("btn2");
+  if(b1){const ok=s.name&&s.weightKg>0&&s.lifeStage&&(s.species==="kat"||s.dogSize);b1.disabled=!ok;}
+  if(b2){b2.disabled=!s.activity;}
+}
+
+function rerenderName() {
+  const h=document.querySelector("h2");
+  if(h&&s.step===1)h.textContent=`Over ${s.name||(s.species==="hond"?"je hond":"je kat")}`;
+}
+
+function ss(k,v){s[k]=v;render();}
+function ss2(patch){Object.assign(s,patch);render();}
+function goStep2(){if(s.name&&s.weightKg>0&&s.lifeStage&&(s.species==="kat"||s.dogSize))ss("step",2);}
+function goStep3(){if(s.activity)ss("step",3);}
+function choose(h){
+  const all=[s.rec?.main,s.rec?.alt].filter(Boolean);
+  const p=all.find(x=>x.shopify_handle===h);
+  if(p){s.chosen=p;render();}
+}
+function toggleSnack(){s.snackOn=!s.snackOn;render();}
+
+async function doSubmit(){
+  const btn=document.getElementById("submitBtn");
+  if(btn){btn.disabled=true;btn.textContent="Bezig…";}
+  s.error="";
+  try{
+    const ph=s.phone.replace(/\D/g,"");
+    // Check bestaande klant
+    const ex=await fetch(`${SB}/rest/v1/customers?phone=eq.${ph}`,{headers:HDR}).then(r=>r.json());
+    let cust=ex?.[0];
+    if(!cust){
+      const cr=await fetch(`${SB}/rest/v1/customers`,{method:"POST",headers:{...HDR,"Content-Type":"application/json",Prefer:"return=representation"},
+        body:JSON.stringify({name:s.custName,phone:ph,email:s.email||null})}).then(r=>r.json());
+      cust=Array.isArray(cr)?cr[0]:cr;
+    }
+    if(!cust?.id) throw new Error("Klant opslaan mislukt");
+
+    const pr=await fetch(`${SB}/rest/v1/pets`,{method:"POST",headers:{...HDR,"Content-Type":"application/json",Prefer:"return=representation"},
+      body:JSON.stringify({customer_id:cust.id,name:s.name,species:s.species,weight_kg:s.weightKg,neutered:s.neutered,lifestyle:s.activity,health_notes:s.allergyNote||null})}).then(r=>r.json());
+    const pet=Array.isArray(pr)?pr[0]:pr;
+
+    const snk=s.snackOn&&s.rec?.snack?s.rec.snack:null;
+    const dr=await fetch(FN,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({customer_id:cust.id,pet_id:pet?.id||null,recommendation:{
+        name:s.name,
+        p1h:s.chosen.shopify_handle,p1n:s.chosen.name,p1d:s.chosen.dg,
+        p2h:"GEEN",p2n:"GEEN",p2d:0,
+        exh:snk?.shopify_handle||"GEEN",exn:snk?.name||"GEEN"
+      }})}).then(r=>r.json());
+
+    if(!dr.success) throw new Error(dr.error||"Levering plannen mislukt");
+    s.delivDate=nextSat(); s.step=6; render();
+  }catch(e){
+    s.error=e.message; render();
+    if(btn){btn.disabled=false;btn.textContent="✓ Bevestig en start abonnement";}
+  }
+}
+
+// Laden
+fetch(`${SB}/rest/v1/products?active=eq.true&order=brand,name`,{headers:HDR})
+  .then(r=>r.json())
+  .then(d=>{s.products=Array.isArray(d)?d:[];render();})
+  .catch(()=>{document.getElementById("content").innerHTML='<div class="err">Producten laden mislukt. Ververs de pagina.</div>';});
+</script>
+</body>
 </html>
